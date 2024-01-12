@@ -1,5 +1,3 @@
-
-import keytar from 'keytar';
 import { localized } from './intl';
 import { Account } from 'mailspring-exports';
 
@@ -7,8 +5,12 @@ interface KeySet {
   [key: string]: string;
 }
 
+const { safeStorage } = require('@electron/remote');
+
+const configCredentialsKey = 'credentials';
+
 /**
- * A basic wrap around keytar's secure key management. Consolidates all of
+ * A basic wrap around electron's secure key management. Consolidates all of
  * our keys under a single namespaced keymap and provides migration
  * support.
  *
@@ -16,9 +18,6 @@ interface KeySet {
  * and every key we want to access.
  */
 class KeyManager {
-  SERVICE_NAME = AppEnv.inDevMode() ? 'Mailspring Dev' : 'Mailspring';
-  KEY_NAME = 'Mailspring Keys';
-
   async deleteAccountSecrets(account: Account) {
     try {
       const keys = await this._getKeyHash();
@@ -87,32 +86,47 @@ class KeyManager {
   }
 
   async _getKeyHash() {
-    const raw = (await keytar.getPassword(this.SERVICE_NAME, this.KEY_NAME)) || '{}';
+    let raw = '{}';
+    const encryptedCredentials = AppEnv.config.get(configCredentialsKey);
+    // Check for different null values to prevent issues if a migration from keytar has failed
+    if (
+      encryptedCredentials !== undefined &&
+      encryptedCredentials !== null &&
+      encryptedCredentials !== 'null'
+    ) {
+      try {
+        raw = await safeStorage.decryptString(Buffer.from(encryptedCredentials, 'utf-8'));
+      } catch (err) {
+        console.error('Mailspring encountered an error reading passwords from the keychain.');
+        console.error(err);
+      }
+    }
     try {
       return JSON.parse(raw) as KeySet;
     } catch (err) {
-      return {};
+      return {} as KeySet;
     }
   }
 
   async _writeKeyHash(keys: KeySet) {
-    await keytar.setPassword(this.SERVICE_NAME, this.KEY_NAME, JSON.stringify(keys));
+    const enrcyptedCredentials = await safeStorage.encryptString(JSON.stringify(keys));
+    AppEnv.config.set(configCredentialsKey, enrcyptedCredentials);
   }
 
   _reportFatalError(err: Error) {
-    let more = '';
-    if (process.platform === 'linux') {
-      more = localized('Make sure you have `libsecret` installed and a keyring is present. ');
-    }
-    require('@electron/remote').dialog.showMessageBoxSync({
+    const clickedButton = require('@electron/remote').dialog.showMessageBoxSync({
       type: 'error',
-      buttons: [localized('Quit')],
+      buttons: [localized('Mailspring Help'), localized('Quit')],
       message: localized(
-        `Mailspring could not store your password securely. %@ For more information, visit %@`,
-        more,
-        'http://support.getmailspring.com/hc/en-us/articles/115001875571'
+        `Mailspring could not store your password securely. For more information, visit %@`,
+        'https://community.getmailspring.com/t/password-management-error/199'
       ),
     });
+
+    if (clickedButton == 0) {
+      const shell = require('electron').shell;
+      shell.openExternal('https://community.getmailspring.com/t/password-management-error/199');
+    }
 
     // tell the app to exit and rethrow the error to ensure code relying
     // on the passwords being saved never runs (saving identity for example)
