@@ -20,7 +20,7 @@ To use an alternative server for MailSync and the Mailspring api you can edit th
 ```jsonc
 "serverUrls": {
   "api": "https://id.getmailspring.com",              // Main API URL for Mailspring backend and MailSync
-  "share": "https://share.getmailspring.com",          // URL for sharing content (currently only applies to thread sharing, other features are configured on the server)
+  "share": "https://shared.getmailspring.com",          // URL for sharing content (currently only applies to thread sharing, other features are configured on the server)
   "openTracking": "https://link.getmailspring.com",   // Link that gets added to emails when open tracking is enabled
   "linkTracking": "https://link.getmailspring.com"    // Link that gets added to emails when link tracking is enabled
 }
