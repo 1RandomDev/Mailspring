@@ -22,7 +22,11 @@ describe('AutoUpdateManager', function() {
       const m = new AutoUpdateManager('3.222.1-abc', this.config, this.specMode);
       spyOn(m, 'setupAutoUpdater');
       expect(m.feedURL).toEqual(
-        'https://updates.getmailspring.com/check/' + process.platform + '/x64/3.222.1-abc/anonymous/stable'
+        'https://updates.getmailspring.com/check/' +
+          process.platform +
+          '/' +
+          process.arch +
+          '/3.222.1-abc/anonymous/stable'
       );
     }));
 
@@ -31,7 +35,11 @@ describe('AutoUpdateManager', function() {
       const m = new AutoUpdateManager('3.222.1', this.config, this.specMode);
       spyOn(m, 'setupAutoUpdater');
       expect(m.feedURL).toEqual(
-        'https://updates.getmailspring.com/check/' + process.platform + '/x64/3.222.1/anonymous/stable'
+        'https://updates.getmailspring.com/check/' +
+          process.platform +
+          '/' +
+          process.arch +
+          '/3.222.1/anonymous/stable'
       );
     }));
 
@@ -40,7 +48,11 @@ describe('AutoUpdateManager', function() {
       this.mailspringIdentityId = 'test-mailspring-id';
       const m = new AutoUpdateManager('3.222.1', this.config, this.specMode);
       expect(m.feedURL).toEqual(
-        'https://updates.getmailspring.com/check/' + process.platform + '/x64/3.222.1/test-mailspring-id/stable'
+        'https://updates.getmailspring.com/check/' +
+          process.platform +
+          '/' +
+          process.arch +
+          '/3.222.1/test-mailspring-id/stable'
       );
     }));
 

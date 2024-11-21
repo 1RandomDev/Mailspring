@@ -1,6 +1,6 @@
 /* eslint global-require: 0 */ /* eslint prefer-template: 0 */
 /* eslint quote-props: 0 */
-const packager = require('electron-packager');
+const packager = require('@electron/packager');
 const path = require('path');
 const util = require('util');
 const tmpdir = path.resolve(require('os').tmpdir(), 'nylas-build');
@@ -244,6 +244,7 @@ module.exports = grunt => {
             appleId: process.env.APPLE_ID,
             appleIdPassword: process.env.APPLE_ID_PASSWORD,
             ascProvider: process.env.APPLE_ID_ASC_PROVIDER,
+            teamId: process.env.APPLE_TEAM_ID,
           }
         : undefined,
       win32metadata: {
